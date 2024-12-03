@@ -1,3 +1,11 @@
+!!!!!!!
+source .venv/bin/activate
+uvicorn api:app —reload
+streamlit run app.py
+
+
+
+
 . Найти и завершить процесс, который занимает порт
 
 На macOS и Linux вы можете использовать следующую команду, чтобы найти процесс, занимающий порт 8000:
@@ -16,10 +24,3 @@ uvicorn api:app --reload --port 8001
 Если Streamlit работает в фоновом режиме, он также может занимать порт. Завершите все активные сессии Streamlit:
 
 pkill -f streamlit
-
-
-
-!!!!!!!
-source venv/bin/activate
-uvicorn api:app —reload
-streamlit run app.py
