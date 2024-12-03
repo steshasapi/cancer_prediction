@@ -1,7 +1,7 @@
 !!!!!!!
 source .venv/bin/activate
 python3 -m pip install -r requirements.txt
-uvicorn api:app —reload
+uvicorn api:app --reload
 streamlit run app.py
 
 pip install scikit-learn
