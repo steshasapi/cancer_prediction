@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
 import numpy as np
 
+
 class CancerData(BaseModel):
     Gender: int
     Age: int
@@ -18,6 +19,7 @@ class CancerData(BaseModel):
     Diagnosis: int
     CancerHistory: int
 
+
 class CancerDataBackend:
     def __init__(self):
         self.setup_logging()
@@ -25,17 +27,6 @@ class CancerDataBackend:
         self.setup_routes()
         self.PATH = dotenv_values('.env')['DATA_PATH']
         
-    async def revert_to_initial_data(self):
-        try:
-            df = await self.load_data()
-            initial_max_id = df["Person ID"].min()
-            df = df[df["Person ID"] <= initial_max_id]
-            await self.save_data(df)
-            return {"message": "Data reverted to initial state.", "data": df.head().to_dict()}
-        except Exception as e:
-            self.logger.error(f"Error while reverting data: {e}")
-            return {"error": str(e)}
-
     def setup_logging(self):
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -80,19 +71,42 @@ class CancerDataBackend:
     async def clean_data(self):
         try:
             df = await self.load_data()
-            self.logger.info("Original data loaded.")
-            df = df.dropna(how="all")
-            self.logger.info("Rows with all NaN values removed.")
+            initial_shape = df.shape
+            
+            # Drop rows with any NaN values
+            df = df.dropna(how="any")
+            self.logger.info("Rows with NaN values removed.")
+            
+            # Check and correct data types
+            for column in df.columns:
+                if df[column].dtype == "object":
+                    # Attempt to convert string-like numerical data
+                    df[column] = df[column].replace(
+                        {r'[kK]\+?$': 'e3', r'[mM]\+?$': 'e6'}, regex=True
+                    ).apply(pd.to_numeric, errors='ignore')
+                    self.logger.info(f"Attempted type conversion for column {column}.")
+            
+            # Remove invalid data in numeric columns
             numeric_cols = df.select_dtypes(include=[np.number]).columns
             df = df[df[numeric_cols].notna().all(axis=1)]
-            self.logger.info("Rows with NaN values in numeric columns removed.")
-            df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            self.logger.info("Inf values replaced with None.")
+            
+            # Collect basic statistics
+            stats = df.describe(include='all').to_dict()
+            self.logger.info("Basic statistics collected.")
+
+            # Save changes
             await self.save_data(df)
-            self.logger.info("Cleaned data saved.")
-            return {"message": "Data cleaned successfully.", "data": df.head().to_dict()}
+            final_shape = df.shape
+
+            # Return information about changes
+            return {
+                "message": "Data cleaning completed successfully!",
+                "initial_shape": initial_shape,
+                "final_shape": final_shape,
+                "stats": stats
+            }
         except Exception as e:
-            self.logger.error(f"Error while cleaning data: {e}")
+            self.logger.error(f"Error during data cleaning: {e}")
             return {"error": str(e)}
 
     async def submit_data(self, data: CancerData):
@@ -130,8 +144,20 @@ class CancerDataBackend:
             self.logger.error(f"Error while loading data: {e}")
             return {"error": str(e)}
 
+    async def revert_to_initial_data(self):
+        try:
+            df = await self.load_data()
+            initial_max_id = df["Person ID"].min()
+            df = df[df["Person ID"] <= initial_max_id]
+            await self.save_data(df)
+            return {"message": "Data reverted to initial state.", "data": df.head().to_dict()}
+        except Exception as e:
+            self.logger.error(f"Error while reverting data: {e}")
+            return {"error": str(e)}
+
     def run(self):
         uvicorn.run(self.app, host="0.0.0.0", port=8000)
+
 
 # Create the backend instance and expose the app
 api = CancerDataBackend()
