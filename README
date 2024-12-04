@@ -6,6 +6,11 @@ streamlit run app.py
 
 pip install scikit-learn
 
+для сервера:
+sudo chmod -R 755 /Users/stefaniasapoznikova/cancer_prediction-1                                                        
+ls -ld /Users/stefaniasapoznikova/cancer_prediction-1                                                                                
+sudo chown -R $USER /Users/stefaniasapoznikova/cancer_prediction-1                                                  
+sudo scp -r /Users/stefaniasapoznikova/cancer_prediction-1 root@194.87.143.32:/home/yourusername/cancer_prediction
 
 
 . Найти и завершить процесс, который занимает порт
