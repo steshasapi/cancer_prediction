@@ -1,33 +1,10 @@
-!!!!!!!
+Start: 
+ssh root@194.87.143.32
+cd /root/cancer_prediction/
 source .venv/bin/activate
 python3 -m pip install -r requirements.txt
-uvicorn api:app --reload
-streamlit run app.py
-
 pip install scikit-learn
+streamlit run app.py
+uvicorn api:app --host 0.0.0.0 --port 8000
 
-для сервера:
-sudo chmod -R 755 /Users/stefaniasapoznikova/cancer_prediction-1                                                        
-ls -ld /Users/stefaniasapoznikova/cancer_prediction-1                                                                                
-sudo chown -R $USER /Users/stefaniasapoznikova/cancer_prediction-1                                                  
-sudo scp -r /Users/stefaniasapoznikova/cancer_prediction-1 root@194.87.143.32:/home/yourusername/cancer_prediction
-
-
-. Найти и завершить процесс, который занимает порт
-
-На macOS и Linux вы можете использовать следующую команду, чтобы найти процесс, занимающий порт 8000:
-
-lsof -i :8000
-Вы увидите список процессов, использующих порт 8000. Запомните или скопируйте PID процесса и завершите его с помощью команды:
-
-kill -9 <PID>
-2. Запустить сервер на другом порте
-
-Вы можете указать другой порт при запуске FastAPI. Например, чтобы использовать порт 8001, выполните:
-
-uvicorn api:app --reload --port 8001
-3. Проверить, использует ли порт Streamlit
-
-Если Streamlit работает в фоновом режиме, он также может занимать порт. Завершите все активные сессии Streamlit:
-
-pkill -f streamlit
+if some troubles with nginx: cd /etc/nginx/sites-available
