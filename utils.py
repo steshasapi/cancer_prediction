@@ -15,132 +15,84 @@ class CancerDataAnalysis:
         self.df = data
 
     def generate_diagnosis_chart(self):
-        """
-        Создает круговую диаграмму распределения диагнозов с монохромной палитрой голубых оттенков.
-        """
-        # Замена значений в колонке Diagnosis для улучшения читаемости
         value_counts_diagnosis = self.df['Diagnosis'].replace({1: 'Have Cancer', 0: 'Healthy'}).value_counts()
 
-        # Создание круговой диаграммы с голубыми оттенками
         fig_diagnosis = go.Figure(data=[
             go.Pie(
                 labels=value_counts_diagnosis.index,
                 values=value_counts_diagnosis.values,
-                marker=dict(colors=['#87CEEB', '#4682B4']),  # Голубые оттенки
-                textinfo='label+percent',  # Отображение меток и процентов
-                textfont=dict(color='black')  # Цвет текста
+                marker=dict(colors=['#87CEEB', '#4682B4']),  
+                textinfo='label+percent',  
             )
         ])
 
-        # Настройка оформления диаграммы
         fig_diagnosis.update_layout(
-            title=dict(
-                text='Diagnosis Distribution',
-                x=0,
-                y=0.95,
-                font=dict(size=16, color='black', family='Arial')
-            ),
-            template='plotly_white',
-            showlegend=False # Скрытие легенды
-        )
+            title_text='Diagnosis Distribution',
+            template='plotly_dark',
+            showlegend=False
+    )
 
-        # Возвращаем фигуру
         return fig_diagnosis
 
 
     def generate_gender_chart(self):
-        """
-        Создает круговую диаграмму распределения полов с монохромной палитрой голубых оттенков.
-        """
-        # Подсчёт количества для каждого пола
         value_counts_gender = self.df['Gender'].replace({1: 'Women', 0: 'Men'}).value_counts()
         
-        # Создание круговой диаграммы (стиль пончик)
         fig_gender = go.Figure(data=[
             go.Pie(
                 labels=value_counts_gender.index,
                 values=value_counts_gender.values,
-                hole=0.6,  # Размер отверстия для стиля "пончик"
-                marker=dict(colors=['#87CEEB', '#4682B4']),  # Голубые оттенки
-                textinfo='label+percent',  # Отображение метки и процента
-                textfont=dict(color='black')  # Цвет текста
+                hole=0.6,  
+                marker=dict(colors=['#87CEEB', '#4682B4']), 
+                textinfo='label+percent',  
+                textfont=dict(color='black')  
             )
         ])
 
-        # Настройка оформления диаграммы
         fig_gender.update_layout(
-            title=dict(
-                text='Gender Distribution',
-                x=0,
-                y=0.95,
-                font=dict(size=16, color='black', family='Arial')
-            ),
-            template='plotly_white',
-            showlegend=False # Скрытие легенды
-        )
-
-        # Возвращаем фигуру
+            title_text='Gender Distribution',
+            template='plotly_dark',
+            showlegend=False
+    )
         return fig_gender
 
     
     def generate_histogram_by_gender(self, x_var='Age', groupby_var='Gender'):
-        """
-        Создает гистограмму распределения переменной x_var по полу groupby_var.
-        График выполнен в монохромной голубой палитре с заголовком в левом верхнем углу.
-        """
-        # Группировка данных
         df_agg = self.df.loc[:, [x_var, groupby_var]].groupby(groupby_var)
         vals = [df[x_var].values.tolist() for _, df in df_agg]
 
-        # Легенда с текстовыми метками для "Gender"
-        gender_map = {0: 'Male', 1: 'Female'}  # Замените на нужные метки
+        gender_map = {0: 'Male', 1: 'Female'}  
 
-        # Монохромная голубая палитра
-        colors = ['#87CEEB', '#4682B4']  # Светло-голубой и темно-голубой
+        colors = ['#87CEEB', '#4682B4']  
 
-        # Создаем интерактивный график
         fig = go.Figure()
 
         for i, val in enumerate(vals):
             fig.add_trace(go.Histogram(
                 x=val,
-                name=gender_map.get(i, str(i)),  # Имя группы для легенды
+                name=gender_map.get(i, str(i)),  
                 marker_color=colors[i],
-                opacity=1,  # Убираем наложение прозрачности
-                nbinsx=40  # Увеличиваем количество интервалов
+                opacity=1,  
+                nbinsx=40  
             ))
 
-        # Настройки осей, оформления и заголовка
         fig.update_layout(
-            title={
-                'text': f"Histogram of {x_var} by {groupby_var}",
-                'x': 0.01,
-                'y': 0.95,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font': dict(size=16, color='black', family='Arial')
-            },
+            title_text=f"Histogram of {x_var} by {groupby_var}",
             xaxis_title=x_var,
             yaxis_title="Frequency",
-            barmode='group',  # Разделяем столбы по группам
-            bargap=0.2,  # Увеличиваем промежутки между столбами
+            barmode='group',  # Group the bars
+            bargap=0.2,  # Increase the gap between bars
             legend_title="Gender",
-            template="plotly_white",  # Белый фон
-            font=dict(color="black"),  # Черный текст
-            legend=dict(
-                font=dict(size=12, color="black")  # Настройка шрифта легенды
-            )
+            template="plotly_dark",  # Dark theme (change to 'plotly_white' for light theme)
+            showlegend=False  # Hide the legend if not needed
         )
 
-        # Показать интерактивный график
         return fig
 
 
     def generate_correlation_matrix(self):
-        # Рассчитываем корреляцию Пирсона
         correl_mtx = self.df.corr(method='pearson')
 
-        # Визуализация с использованием Plotly (интерактивная тепловая карта)
         fig_temp = px.imshow(
             correl_mtx,
             text_auto=True,
@@ -151,27 +103,22 @@ class CancerDataAnalysis:
             y=correl_mtx.index
         )
 
-        # Настройка оформления
         fig_temp.update_layout(
-            title={
-                'text': "Pearson's Correlation Matrix",
-                'x': 0.01,
-                'y': 0.95,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font': dict(size=16, color='black', family='Arial')
-            },
-            paper_bgcolor="white",  # Белый фон
-            plot_bgcolor="white",  # Белый фон для графика
-            xaxis_title="Features",  # Подпись для оси X
-            yaxis_title="Features",  # Подпись для оси Y
-            coloraxis_colorbar_title="Pearson's Correlation",  # Описание цветовой шкалы
-            width=1200,  # Увеличиваем ширину графика
-            height=900  # Увеличиваем высоту графика
+            title={'text': "Pearson's Correlation Matrix", 'x': 0.01, 'y': 0.97},
+            xaxis_title="Features",
+            yaxis_title="Features",
+            coloraxis_colorbar_title="Pearson's Correlation",
+            width=1200,
+            height=800,
+            coloraxis_colorbar=dict(
+            len=0.5
+            ),
+
         )
 
-        # Возвращаем фигуру
         return fig_temp
+
+
 
 
     # Define a consistent blue color palette
@@ -193,7 +140,7 @@ class CancerDataAnalysis:
             color_discrete_sequence=self.blue_palette,
         )
         fig.update_layout(
-            template="plotly_white",
+            template="plotly_dark",
             title=dict(
                 text="3D Scatter Plot: Physical Activity, BMI, Alcohol Intake",
                 font=dict(family="Arial", size=18)
@@ -203,7 +150,7 @@ class CancerDataAnalysis:
                 yaxis=dict(title="BMI"),
                 zaxis=dict(title="Alcohol Intake"),
             ),
-            font=dict(family="Arial", size=12, color="black")
+            font=dict(family="Arial", size=12)
         )
         return fig
 
@@ -341,8 +288,8 @@ class CancerDataAnalysis:
             xaxis=dict(title="Genetic Risk"),
             yaxis=dict(title="Frequency (Count)"),
             yaxis2=dict(title="Percentage (%)", overlaying='y', side='right'),
-            font=dict(family="Arial", size=12, color="black"),
-            title_font=dict(family="Arial", size=18, color="black"),
+            font=dict(family="Arial", size=12),
+            title_font=dict(family="Arial", size=18),
         )
         return fig
 
@@ -375,27 +322,6 @@ class CancerDataAnalysis:
             title_font=dict(family="Arial", size=18),
         )
         return fig
-
-
-
-
-
-
-
-    def generate_chart(self):
-        # === 1. Преобразование категориальных столбцов в числовые ===
-        self.df['GeneticRisk_Category'] = pd.cut(self.df['GeneticRisk'], bins=[-1, 0, 1, 2], labels=['Low', 'Medium', 'High'])
-        self.df['PhysicalActivity_Category'] = pd.cut(self.df['PhysicalActivity'], bins=[-1, 3, 7, 10], labels=['Low', 'Medium', 'High'])
-
-        # === 2. Построение монохромной гистограммы для BMI ===
-        plt.figure(figsize=(8, 6))
-        sns.histplot(self.df, x='BMI', hue='Diagnosis', multiple="stack", palette="Blues", kde=True)
-        plt.title('Распределение BMI по Диагнозу')
-        plt.xlabel('Индекс массы тела (BMI)')
-        plt.ylabel('Частота')
-
-        # Возвращаем только график
-        return plt
 
 
 def generate_key(self, prefix="chart"):
