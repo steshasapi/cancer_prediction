@@ -3,9 +3,7 @@ import pandas as pd
 import logging
 import plotly.express as px
 import plotly.graph_objects as go
-import seaborn as sns
-import matplotlib.pyplot as plt
-import utils  # Importing your utils.py module
+import utils  # Importing utils.py module
 import requests
 import os
 from dotenv import load_dotenv
@@ -184,7 +182,7 @@ class App:
         
         st.write(description)
         
-        # Ensure you're using the graph_generator instance to call plot_hypothesis_bar_chart
+        # Ensure using the graph_generator instance to call plot_hypothesis_bar_chart
         st.plotly_chart(graph_generator.plot_hypothesis_bar_chart(), use_container_width=True)
 
     def display_form(self):
