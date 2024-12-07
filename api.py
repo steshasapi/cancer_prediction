@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
-import numpy as np
 
 
 class CancerData(BaseModel):
@@ -69,45 +68,38 @@ class CancerDataBackend:
         df.to_csv(self.PATH, index=False)
 
     async def clean_data(self):
-        try:
-            df = await self.load_data()
-            initial_shape = df.shape
-            
-            # Drop rows with any NaN values
-            df = df.dropna(how="any")
-            self.logger.info("Rows with NaN values removed.")
-            
-            # Check and correct data types
-            for column in df.columns:
-                if df[column].dtype == "object":
-                    # Attempt to convert string-like numerical data
-                    df[column] = df[column].replace(
-                        {r'[kK]\+?$': 'e3', r'[mM]\+?$': 'e6'}, regex=True
-                    ).apply(pd.to_numeric, errors='ignore')
-                    self.logger.info(f"Attempted type conversion for column {column}.")
-            
-            # Remove invalid data in numeric columns
-            numeric_cols = df.select_dtypes(include=[np.number]).columns
-            df = df[df[numeric_cols].notna().all(axis=1)]
-            
-            # Collect basic statistics
-            stats = df.describe(include='all').to_dict()
-            self.logger.info("Basic statistics collected.")
+    try:
+        df = await self.load_data()
+        initial_shape = df.shape
 
-            # Save changes
-            await self.save_data(df)
-            final_shape = df.shape
+        if df.isnull().any().any():
+            df = df.dropna()
+            self.logger.info("Rows with missing values removed.")
 
-            # Return information about changes
-            return {
-                "message": "Data cleaning completed successfully!",
-                "initial_shape": initial_shape,
-                "final_shape": final_shape,
-                "stats": stats
-            }
-        except Exception as e:
-            self.logger.error(f"Error during data cleaning: {e}")
-            return {"error": str(e)}
+        numeric_cols = ['Age', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory', 'Diagnosis']
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+
+        df = df.dropna()
+        if 'Age' in df.columns:
+            df = df[df['Age'] > 0]
+        if 'BMI' in df.columns:
+            df = df[(df['BMI'] > 10) & (df['BMI'] < 50)]
+
+        await self.save_data(df)
+        final_shape = df.shape
+
+        self.logger.info(f"Data cleaning completed. Data shape changed from {initial_shape} to {final_shape}.")
+        return {
+            "message": "Data cleaning completed successfully.",
+            "initial_shape": initial_shape,
+            "final_shape": final_shape,
+        }
+    except Exception as e:
+        self.logger.error(f"Error during data cleaning: {e}")
+        return {"error": str(e)}
+
 
     async def submit_data(self, data: CancerData):
         try:
