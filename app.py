@@ -59,6 +59,13 @@ class App:
     
     def display_home(self):
         """Home Page with a greeting and basic data information."""
+        col_an = ["BMI", "PhysicalActivity", "AlcoholIntake"]
+
+        if not self.df.empty:
+            median = self.df[col_an].median()
+            mean = self.df[col_an].mean()
+            sd = self.df[col_an].std()
+
         st.header("Welcome to the Cancer Data Analysis App!")
         st.subheader("Greetings!")
         st.write(
@@ -73,9 +80,20 @@ class App:
         st.subheader("Data Overview:")
         if not self.df.empty:
             st.write(self.df.head())  # Display first few records from the data
+            st.subheader("Key Statistics:")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.write("### Medians:")
+                st.write(median)
+            with col2:
+                st.write("### Means:")
+                st.write(mean)
+            with col3:
+                st.write("### Standard Deviations:")
+                st.write(sd)
         else:
             st.warning("No data loaded. Please add some records.")
- 
+            
     def validate_data(self, data):
         """Validate data before adding it."""
         if not (0 <= data['Age'] <= 120):
