@@ -1,3 +1,5 @@
+My project website: https://cancer-prediction.ru
+
 Start: 
 python3 -m venv .venv
 source .venv/bin/activate
