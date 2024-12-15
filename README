@@ -7,3 +7,10 @@ python3 -m pip install -r requirements.txt
 pip install scikit-learn
 streamlit run app.py
 uvicorn api:app --host 0.0.0.0 --port 8000
+
+how to log in to your server and connect a domain:
+1. use vs code and his fitches for logging in the server
+2. upload all files to the server and create a virtual enviroment
+3. use nginx
+4. connect your domain to your server with IPv and shh-keys
+5. run your code and that's all
